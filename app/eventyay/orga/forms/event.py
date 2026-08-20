@@ -405,7 +405,8 @@ class ReviewScoreCategoryForm(I18nHelpText, I18nModelForm):
             self.fields.pop('limit_tracks')
         else:
             self.fields['limit_tracks'].queryset = event.tracks.all()
-        ids = self.data.get(self.prefix + '-new_scores')
+        prefix = (self.prefix + '-') if self.prefix else ''
+        ids = self.data.get(prefix + 'new_scores') if self.data else None
         self.new_label_ids = ids.strip(',').split(',') if ids else []
         for label_id in self.new_label_ids:
             self._add_score_fields(label_id=label_id)
@@ -471,7 +472,7 @@ class ReviewScoreCategoryForm(I18nHelpText, I18nModelForm):
             elif not value_empty and not label:
                 self.add_error(f'label_{score_id}', _('Please provide a label for the score.'))
 
-            if not value_empty:
+            if not value_empty and f'value_{score_id}' not in self.errors:
                 seen_values.setdefault(value, []).append(score_id)
 
         for val, ids in seen_values.items():

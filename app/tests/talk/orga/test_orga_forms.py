@@ -68,3 +68,47 @@ def test_review_score_category_form_duplicate_score_validation(event):
         form_valid = ReviewScoreCategoryForm(event=event, instance=category, data=data_valid)
         assert form_valid.is_valid()
 
+
+@pytest.mark.django_db
+def test_review_score_category_form_duplicate_values_new_scores(event):
+    with scope(event=event):
+        category = event.score_categories.first()
+        data = {
+            'name_0': str(category.name),
+            'weight': '1',
+            'new_scores': 'new_1,new_2',
+            'value_new_1': '4',
+            'label_new_1': 'Good',
+            'value_new_2': '4',  # Duplicate new score
+            'label_new_2': 'Very Good',
+        }
+        form = ReviewScoreCategoryForm(event=event, instance=category, data=data)
+        assert not form.is_valid()
+        assert 'value_new_1' not in form.errors
+        assert 'value_new_2' in form.errors
+        assert 'Duplicate score values are not allowed' in str(form.errors['value_new_2'])
+
+
+@pytest.mark.django_db
+def test_review_score_category_form_duplicate_values_existing_and_new_scores(event):
+    with scope(event=event):
+        category = event.score_categories.first()
+        scores = list(category.scores.all())
+        existing_score = scores[0]
+
+        data = {
+            'name_0': str(category.name),
+            'weight': '1',
+            f'value_{existing_score.id}': '3',
+            f'label_{existing_score.id}': 'Weak',
+            'new_scores': 'new_dup',
+            'value_new_dup': '3',  # Duplicate of existing_score value
+            'label_new_dup': 'Duplicate of Existing',
+        }
+        form = ReviewScoreCategoryForm(event=event, instance=category, data=data)
+        assert not form.is_valid()
+        assert f'value_{existing_score.id}' not in form.errors
+        assert 'value_new_dup' in form.errors
+        assert 'Duplicate score values are not allowed' in str(form.errors['value_new_dup'])
+
+
