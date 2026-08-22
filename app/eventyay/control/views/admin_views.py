@@ -137,8 +137,21 @@ class ProfileView(AdminBase, FormView):
         return result
 
 
-class IndexView(AdminBase, TemplateView):
-    template_name = "control/index.html"
+class VideoSettingsView(AdminBase, TemplateView):
+    template_name = "control/video_settings.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["bbb_servers"] = BBBServer.objects.select_related("event_exclusive").order_by("url")
+        ctx["janus_servers"] = JanusServer.objects.select_related("event_exclusive").order_by("url")
+        ctx["jitsi_servers"] = JitsiServer.objects.select_related("event_exclusive").order_by("url")
+        ctx["turn_servers"] = TurnServer.objects.select_related("event_exclusive").order_by("hostname")
+        ctx["streaming_servers"] = StreamingServer.objects.order_by("name")
+        return ctx
+
+
+class IndexView(VideoSettingsView):
+    pass
 
 
 class EventList(AdminBase, ListView):
@@ -449,7 +462,7 @@ class BBBServerList(AdminBase, ListView):
 class BBBServerCreate(AdminBase, CreateView):
     template_name = "control/bbb_form.html"
     form_class = BBBServerForm
-    success_url = "/admin/video/bbbs/"
+    success_url = "/admin/video/settings/#bbb"
 
     @transaction.atomic()
     def form_valid(self, form):
@@ -469,7 +482,7 @@ class BBBServerUpdate(AdminBase, UpdateView):
     template_name = "control/bbb_form.html"
     form_class = BBBServerForm
     queryset = BBBServer.objects.all()
-    success_url = "/admin/video/bbbs/"
+    success_url = "/admin/video/settings/#bbb"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -487,7 +500,7 @@ class BBBServerUpdate(AdminBase, UpdateView):
 class BBBServerDelete(AdminBase, DeleteView):
     template_name = "control/bbb_delete.html"
     queryset = BBBServer.objects.all()
-    success_url = "/admin/video/bbbs/"
+    success_url = "/admin/video/settings/#bbb"
     context_object_name = "server"
 
     def delete(self, request, *args, **kwargs):
@@ -513,7 +526,7 @@ class JanusServerList(AdminBase, ListView):
 class JanusServerCreate(AdminBase, CreateView):
     template_name = "control/janus_form.html"
     form_class = JanusServerForm
-    success_url = "/admin/video/janus/"
+    success_url = "/admin/video/settings/#janus"
 
     @transaction.atomic()
     def form_valid(self, form):
@@ -533,7 +546,7 @@ class JanusServerUpdate(AdminBase, UpdateView):
     template_name = "control/janus_form.html"
     form_class = JanusServerForm
     queryset = JanusServer.objects.all()
-    success_url = "/admin/video/janus/"
+    success_url = "/admin/video/settings/#janus"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -551,7 +564,7 @@ class JanusServerUpdate(AdminBase, UpdateView):
 class JanusServerDelete(AdminBase, DeleteView):
     template_name = "control/janus_delete.html"
     queryset = JanusServer.objects.all()
-    success_url = "/admin/video/janus/"
+    success_url = "/admin/video/settings/#janus"
     context_object_name = "server"
 
     def delete(self, request, *args, **kwargs):
@@ -577,7 +590,7 @@ class JitsiServerList(AdminBase, ListView):
 class JitsiServerCreate(AdminBase, CreateView):
     template_name = "control/jitsi_form.html"
     form_class = JitsiServerForm
-    success_url = "/admin/video/jitsi/"
+    success_url = "/admin/video/settings/#jitsi"
 
     @transaction.atomic()
     def form_valid(self, form):
@@ -597,7 +610,7 @@ class JitsiServerUpdate(AdminBase, UpdateView):
     template_name = "control/jitsi_form.html"
     form_class = JitsiServerForm
     queryset = JitsiServer.objects.all()
-    success_url = "/admin/video/jitsi/"
+    success_url = "/admin/video/settings/#jitsi"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -615,7 +628,7 @@ class JitsiServerUpdate(AdminBase, UpdateView):
 class JitsiServerDelete(AdminBase, DeleteView):
     template_name = "control/jitsi_delete.html"
     queryset = JitsiServer.objects.all()
-    success_url = "/admin/video/jitsi/"
+    success_url = "/admin/video/settings/#jitsi"
     context_object_name = "server"
 
     def delete(self, request, *args, **kwargs):
@@ -648,7 +661,7 @@ class TurnServerList(AdminBase, ListView):
 class TurnServerCreate(AdminBase, CreateView):
     template_name = "control/turn_form.html"
     form_class = TurnServerForm
-    success_url = "/admin/video/turns/"
+    success_url = "/admin/video/settings/#turn"
 
     @transaction.atomic()
     def form_valid(self, form):
@@ -668,7 +681,7 @@ class TurnServerUpdate(AdminBase, UpdateView):
     template_name = "control/turn_form.html"
     form_class = TurnServerForm
     queryset = TurnServer.objects.all()
-    success_url = "/admin/video/turns/"
+    success_url = "/admin/video/settings/#turn"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -686,7 +699,7 @@ class TurnServerUpdate(AdminBase, UpdateView):
 class TurnServerDelete(AdminBase, DeleteView):
     template_name = "control/turn_delete.html"
     queryset = TurnServer.objects.all()
-    success_url = "/admin/video/turns/"
+    success_url = "/admin/video/settings/#turn"
     context_object_name = "server"
 
     def delete(self, request, *args, **kwargs):
@@ -744,7 +757,7 @@ class StreamingServerList(AdminBase, ListView):
 class StreamingServerCreate(AdminBase, CreateView):
     template_name = "control/streaming_form.html"
     form_class = StreamingServerForm
-    success_url = "/admin/video/streamingservers/"
+    success_url = "/admin/video/settings/#streaming"
 
     @transaction.atomic()
     def form_valid(self, form):
@@ -764,7 +777,7 @@ class StreamingServerUpdate(AdminBase, UpdateView):
     template_name = "control/streaming_form.html"
     form_class = StreamingServerForm
     queryset = StreamingServer.objects.all()
-    success_url = "/admin/video/streamingservers/"
+    success_url = "/admin/video/settings/#streaming"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -782,7 +795,7 @@ class StreamingServerUpdate(AdminBase, UpdateView):
 class StreamingServerDelete(AdminBase, DeleteView):
     template_name = "control/streaming_delete.html"
     queryset = StreamingServer.objects.all()
-    success_url = "/admin/video/streamingservers/"
+    success_url = "/admin/video/settings/#streaming"
     context_object_name = "server"
 
     def delete(self, request, *args, **kwargs):

@@ -553,9 +553,16 @@ def get_admin_navigation(request):
             return path == prefix.rstrip('/') or path.startswith(prefix.rstrip('/') + '/')
         video_children = [
             {
-                'label': _('Dashboard'),
-                'url': reverse('eventyay_admin:video_admin:index'),
-                'active': is_active('/admin/video', exact=True),
+                'label': _('Video settings'),
+                'url': reverse('eventyay_admin:video_admin:settings'),
+                'active': is_active('/admin/video/settings')
+                    or is_active('/admin/video', exact=True)
+                    or is_active('/admin/video/bbbs')
+                    or is_active('/admin/video/janus')
+                    or is_active('/admin/video/jitsi')
+                    or is_active('/admin/video/turns')
+                    or is_active('/admin/video/turnservers')
+                    or is_active('/admin/video/streamingservers'),
             },
             {
                 'label': _('Events'),
@@ -563,34 +570,9 @@ def get_admin_navigation(request):
                 'active': is_active('/admin/video/events'),
             },
             {
-                'label': _('BBB servers'),
-                'url': reverse('eventyay_admin:video_admin:bbbserver.list'),
-                'active': is_active('/admin/video/bbbs') and 'moveroom' not in path,
-            },
-            {
                 'label': _('Move BBB room'),
                 'url': reverse('eventyay_admin:video_admin:bbbserver.moveroom'),
                 'active': is_active('/admin/video/bbbs/moveroom', exact=True),
-            },
-            {
-                'label': _('Janus servers'),
-                'url': reverse('eventyay_admin:video_admin:janusserver.list'),
-                'active': is_active('/admin/video/janus'),
-            },
-            {
-                'label': _('Jitsi servers'),
-                'url': reverse('eventyay_admin:video_admin:jitsiserver.list'),
-                'active': is_active('/admin/video/jitsi'),
-            },
-            {
-                'label': _('TURN servers'),
-                'url': reverse('eventyay_admin:video_admin:turnserver.list'),
-                'active': is_active('/admin/video/turns'),
-            },
-            {
-                'label': _('Streaming servers'),
-                'url': reverse('eventyay_admin:video_admin:streamingserver.list'),
-                'active': is_active('/admin/video/streamingservers'),
             },
             {
                 'label': _('Streamkey generator'),
@@ -602,18 +584,12 @@ def get_admin_navigation(request):
                 'url': reverse('eventyay_admin:video_admin:systemlog.list'),
                 'active': is_active('/admin/video/systemlog'),
             },
-            
-            # {
-            #     'label': _('Users'),
-            #     'url': f'{video_root}/users/',
-            #     'active': is_active(f'{video_root}/users'),
-            # },
         ]
         parent_active = any(c['active'] for c in video_children) or is_active(video_root)
         nav.append(
             {
                 'label': _('Video Admin'),
-                'url': reverse('eventyay_admin:video_admin:index'),
+                'url': reverse('eventyay_admin:video_admin:settings'),
                 'active': parent_active,
                 'icon': 'video-camera',
                 'children': video_children,

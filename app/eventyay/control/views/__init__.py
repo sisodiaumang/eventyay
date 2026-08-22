@@ -224,6 +224,7 @@ from .admin_views import (
     TurnServerUpdate,
     UserList,
     UserUpdate,
+    VideoSettingsView,
 )
 
 # Make all views available at the module level
