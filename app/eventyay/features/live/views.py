@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.utils.timezone import now
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
@@ -236,15 +237,31 @@ class BBBCSSView(TemplateView):
 
 class ShortTokenView(View):
     def get(self, request, token):
-        event_domain = re.sub(r":\d+$", "", self.request.get_host())
-        event = get_object_or_404(Event, domain=event_domain)
         try:
-            st = ShortToken.objects.get(short_token=token, event=event)
-            return redirect(f"/#token={st.long_token}")
+            st = ShortToken.objects.select_related("event", "event__organizer").get(
+                short_token=token
+            )
         except ShortToken.DoesNotExist:
             return HttpResponse(
-                "Unknown access token. Please check that you clicked the correct link."
+                _("Unknown access token. Please check that you clicked the correct link."),
+                status=404,
             )
+
+        if st.expires and st.expires < now():
+            return HttpResponse(
+                _("This access token has expired. Please request a new link."),
+                status=410,
+            )
+
+        event = st.event
+        if event.domain:
+            return redirect(f"{request.scheme}://{event.domain}/#token={st.long_token}")
+        elif event.organizer:
+            return redirect(
+                f"/{event.organizer.slug}/{event.slug}/video/#token={st.long_token}"
+            )
+        else:
+            return redirect(f"/#token={st.long_token}")
 
 
 class SystemLogView(View):

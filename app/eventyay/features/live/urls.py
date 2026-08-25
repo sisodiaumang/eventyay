@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     re_path(
-        "login/(?P<token>[a-zA-Z0-9]+)$",
+        r"^login/(?P<token>[a-zA-Z0-9_-]+)/?$",
         views.ShortTokenView.as_view(),
         name="token.short",
     ),

@@ -34,8 +34,13 @@ for app in apps.get_app_configs():
 
 plugin_patterns = [url(r'', include((raw_plugin_patterns, 'plugins')))]
 
+# Add live URLs for video / short token login
+live_patterns = [
+    url(r'', include(('eventyay.features.live.urls', 'live'))),
+]
+
 # The presale namespace comes last, because it contains a wildcard catch
-urlpatterns = common_patterns + plugin_patterns + presale_patterns
+urlpatterns = common_patterns + live_patterns + plugin_patterns + presale_patterns
 
 handler404 = 'pretix.base.views.errors.page_not_found'
 handler500 = 'pretix.base.views.errors.server_error'
